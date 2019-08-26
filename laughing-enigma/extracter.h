@@ -4,11 +4,12 @@
 #include <vector>
 
 class Extracter {
- private:
-  std::vector<QString> desc_, body_;
+ protected:
+  QString book_;
+  std::vector<QString> images_;
  public:
   Extracter();
-  const std::vector<QString>& GetDesc() const;
-  const std::vector<QString>& GetBody() const;
+  const QString& GetBook() const;
+  const std::vector<QString>& GetImages() const;
 };
 

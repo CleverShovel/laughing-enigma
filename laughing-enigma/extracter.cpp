@@ -4,10 +4,10 @@ using namespace std;
 
 Extracter::Extracter() {}
 
-const vector<QString>& Extracter::GetDesc() const {
-  return desc_;
+const QString& Extracter::GetBook() const {
+  return book_;
 }
 
-const vector<QString>& Extracter::GetBody() const {
-  return body_;
+const vector<QString>& Extracter::GetImages() const {
+  return images_;
 }
