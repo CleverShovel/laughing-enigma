@@ -73,6 +73,21 @@ class Document : public Base {
   void End(QString&) override;
 };
 
+class FictionBook : public Base {
+ public:
+  FictionBook(Reader&);
+};
+
+class TitleInfo : public Base {
+ public:
+  TitleInfo(Reader&);
+};
+
+class CoverPage : public Base {
+ public:
+  CoverPage(Reader&);
+};
+
 class Tag : public Base {
  public:
   Tag(Reader&, QString);
@@ -174,6 +189,11 @@ class Title : public Tag {
   Title(Reader&);
   void Start(QString&) override;
   void End(QString&) override;
+};
+
+class Section : public Base {
+ public:
+  Section(Reader&);
 };
 
 class Binary : public Tag {

@@ -8,9 +8,13 @@ using namespace std;
 
 namespace FB2Parse {
 const unordered_map <QString, decltype(&Create<Base>)> tags = {
+  {"FictionBook",   &Create <FictionBook>},
   {"description",   &Create<Description>},
+  {"title-info",    &Create<TitleInfo>},
+  {"coverpage",     &Create<CoverPage>},
   {"body",          &Create<Body>},
   {"title",         &Create<Title>},
+  {"section",       &Create<Section>},
   {"image",         &Create<Image>},
   {"binary",        &Create<Binary>},
   {"p",             &Create<P>},
@@ -62,18 +66,19 @@ void Reader::ReadTokens() {
     }
     if (token == QXmlStreamReader::StartElement) {
       auto tag = xml->name().toString();
-      if (tags.count(tag))
+      qDebug() << '+' + tag;
+      if (elems.back()->GetTag() == "")
+        elems.push_back(tags.at("default")(*this));
+      else if (tags.count(tag))
         elems.push_back(tags.at(tag)(*this));
       else
         elems.push_back(tags.at("default")(*this));
       elems.back()->Start(str);
     }
     if (token == QXmlStreamReader::EndElement) {
-      if (elems.back()->GetTag() == xml->name().toString() ||
-          elems.back()->GetTag() == "") {
-        elems.back()->End(str);
-        elems.pop_back();
-      }
+      qDebug() << '-' + xml->name().toString();
+      elems.back()->End(str);
+      elems.pop_back();
     }
     if (token == QXmlStreamReader::Characters) {
 //      if (xml->text().toString().contains(QRegExp("[A-Z]|[a-z]|[А-Я]|[а-я]"))) {
@@ -101,7 +106,7 @@ void Base::Process(QString&) {}
 void Base::End(QString&) {}
 const QString& Base::GetTag() const { return tag; }
 
-Document::Document(Reader& reader) : Base(reader, "FictionBook") {}
+Document::Document(Reader& reader) : Base(reader, "Document") {}
 
 void Document::Start(QString& str) {
   str.reserve(str.size() + 60);
@@ -113,6 +118,12 @@ void Document::Start(QString& str) {
 void Document::End(QString& str) {
   str += "</body></html>";
 }
+
+FictionBook::FictionBook(Reader& reader) : Base(reader, "FictionBook") {}
+
+TitleInfo::TitleInfo(Reader& reader) : Base(reader, "title-info") {}
+
+CoverPage::CoverPage(Reader& reader) : Base(reader, "coverpage") {}
 
 Description::Description(Reader& reader) : Tag(reader, "description") {}
 //TitleInfo::TitleInfo(Reader& reader) : Base(reader) {}
@@ -189,6 +200,8 @@ void Title::Start(QString& str) {
 void Title::End(QString& str) {
   str += "</p>";
 }
+
+Section::Section(Reader& reader) : Base(reader, "section") {}
 
 Binary::Binary(Reader& reader) : Tag(reader, "binary") {}
 
