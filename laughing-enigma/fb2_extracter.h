@@ -56,6 +56,7 @@ class Base {
  public:
   Base(Reader&, QString);
   virtual void Start(QString&);
+  virtual void Process(QString&);
   virtual void End(QString&);
   virtual ~Base() = default;
   virtual const QString& GetTag() const;
@@ -76,6 +77,7 @@ class Tag : public Base {
  public:
   Tag(Reader&, QString);
   void Start(QString&) override;
+  void Process(QString&) override;
   void End(QString&) override;
 };
 
@@ -163,6 +165,7 @@ class Image : public Tag {
  public:
   Image(Reader&);
   void Start(QString&) override;
+  void Process(QString&) override;
   void End(QString&) override;
 };
 
@@ -177,7 +180,10 @@ class Binary : public Tag {
  public:
   Binary(Reader&);
   void Start(QString&) override;
+  void Process(QString&) override;
   void End(QString&) override;
+ private:
+  QString id, type;
 };
 
 class Redunant : public Base {

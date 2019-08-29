@@ -9,8 +9,11 @@ using namespace std;
 namespace FB2Parse {
 const unordered_map <QString, decltype(&Create<Base>)> tags = {
   {"description",   &Create<Description>},
+  {"body",          &Create<Body>},
   {"title",         &Create<Title>},
   {"image",         &Create<Image>},
+  {"binary",        &Create<Binary>},
+  {"p",             &Create<P>},
   {"a",             &Create<A>},
   {"table",         &Create<Table>},
   {"tr",            &Create<Tr>},
@@ -73,9 +76,10 @@ void Reader::ReadTokens() {
       }
     }
     if (token == QXmlStreamReader::Characters) {
-      if (xml->text().toString().contains(QRegExp("[A-Z]|[a-z]|[А-Я]|[а-я]"))) {
-        str += "<p>" + xml->text().toString() + "</p>";
-      }
+//      if (xml->text().toString().contains(QRegExp("[A-Z]|[a-z]|[А-Я]|[а-я]"))) {
+//        str += "<p>" + xml->text().toString() + "</p>";
+//      }
+      elems.back()->Process(str);
     }
   }
 }
@@ -93,6 +97,7 @@ std::unordered_map<QString, int>& Reader::GetImages() {
 Base::Base(Reader& reader, QString tag = "") : reader(reader), tag(move(tag)) {}
 
 void Base::Start(QString&) {}
+void Base::Process(QString&) {}
 void Base::End(QString&) {}
 const QString& Base::GetTag() const { return tag; }
 
@@ -119,6 +124,10 @@ void Tag::Start(QString& str) {
   str += "<";
   str += tag;
   str += ">";
+}
+
+void Tag::Process(QString& str) {
+  str += reader.GetXml().text().toString();
 }
 
 void Tag::End(QString& str) {
@@ -152,6 +161,7 @@ void Image::Start(QString& str) {
   if (reader.GetXml().attributes().count() > 0) {
     auto attr = reader.GetXml().attributes().at(0).value().toString();
     attr.remove(0, 1);
+    qDebug() << attr;
     auto& images = reader.GetImages();
     if (images.count(attr) == 0)
       images[attr] = images.size();
@@ -162,8 +172,8 @@ void Image::Start(QString& str) {
   }
 }
 
-void Image::End(QString&) {
-}
+void Image::Process(QString&) {}
+void Image::End(QString&) {}
 
 Title::Title(Reader& reader) : Tag(reader, "title") {}
 
@@ -184,9 +194,9 @@ Binary::Binary(Reader& reader) : Tag(reader, "binary") {}
 
 void Binary::Start(QString&) {
 //  TODO: change this
-//  auto& xml = reader.GetXml();
-//  QString id = xml.attributes().at(0).value().toString();
-//  QString type = xml.attributes().at(1).value().toString();
+  auto& xml = reader.GetXml();
+  id = xml.attributes().at(0).value().toString();
+  type = xml.attributes().at(1).value().toString();
 //  xml.readNext();
 //  QString value;
 //  value.reserve(250);
@@ -196,6 +206,17 @@ void Binary::Start(QString&) {
 //          xml.text().toString()
 //          + "\"/>";
 //  reader.AddArg(move(value));
+}
+
+void Binary::Process(QString&) {
+  QString value;
+  value.reserve(250);
+  value = "<img src=\"data:" +
+          std::move(type) +
+          ";base64," +
+          reader.GetXml().text().toString()
+          + "\"/>";
+  reader.AddArg(move(value));
 }
 
 void Binary::End(QString&) {}
